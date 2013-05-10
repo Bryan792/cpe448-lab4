@@ -16,6 +16,15 @@ public class NaiveSuffixTree
       children = new ArrayList<Node>();
       leaves = new ArrayList<Integer>();
     }
+    
+    public Node(int start, int end)
+    {
+      this.stringStart = start;
+      this.stringEnd = end;
+      children = new ArrayList<Node>();
+      leaves = new ArrayList<Integer>();
+      this.leaf = leaf;
+    }
 
     public Node(int start, int end, int leaf)
     {
@@ -23,6 +32,7 @@ public class NaiveSuffixTree
       this.stringEnd = end;
       children = new ArrayList<Node>();
       leaves = new ArrayList<Integer>();
+      leaves.add(leaf);
       this.leaf = leaf;
     }
 
@@ -99,9 +109,9 @@ public class NaiveSuffixTree
   public void splitTree(int match, int start, int end, Node parent, Node child)
   {
     Node newNode = new Node(start + match, end, leaf);
-    Node newParent = new Node(start, start + match, 0);
+    Node newParent = new Node(start, start + match);
     newParent.leaves.add(leaf++);
-    newParent.leaves.add(child.leaf);
+    newParent.leaves.addAll(child.leaves);
     child.stringStart += match;
     parent.children.remove(child);
     parent.children.add(newParent);
@@ -135,7 +145,8 @@ public class NaiveSuffixTree
     ArrayList<Integer> returnArr = new ArrayList<Integer>();
     if (node.count == 1)
       returnArr.add(node.leaf);
-    for (int i = 0; i < node.children.size(); i++)
+    return node.leaves;
+/*    for (int i = 0; i < node.children.size(); i++)
     {
       if (node.children.get(i).count > 1)
       {
@@ -146,7 +157,7 @@ public class NaiveSuffixTree
         returnArr.add(node.children.get(i).leaf);
       }
     }
-    return returnArr;
+    return returnArr;*/
   }
 
   public ArrayList<Integer> findSequence(String sequence, Node node)
@@ -179,9 +190,8 @@ public class NaiveSuffixTree
   public static void main(String[] args)
   {
     NaiveSuffixTree myTree = new NaiveSuffixTree();
-    Node root = myTree.createTree("ATGAT");
-    System.out.println(myTree.findSequence("A", root));
-
+    Node root = myTree.createTree("ATGACTGTAGAGAGATGCAACTGTGCGGACAAC");
+    System.out.println(myTree.findSequence("AGA", root));
     // myTree.printTree(root);
   }
 }
