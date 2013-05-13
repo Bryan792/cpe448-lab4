@@ -7,6 +7,8 @@ public class BaseCalculator {
       this.sequence = s;
       this.props = baseProportions(s);
       this.nucleoCount = s.length();
+      if(s.charAt(s.length()-1) == '$')
+         this.nucleoCount--;
    }
 
    public double expectedOccurences(String s) {
@@ -39,16 +41,19 @@ public class BaseCalculator {
       for(int i = 0; i < s.length(); i++) {
          switch(s.charAt(i)) {
             case 'A': aCount++;
+                      count++;
                       break;
             case 'T': tCount++;
+                      count++;
                       break;
             case 'G': gCount++; 
+                      count++;
                       break;
             case 'C': cCount++;
+                      count++;
                       break;
             default:  break;
          }
-         count++;
       }
       
       double[] vals = new double[4];
