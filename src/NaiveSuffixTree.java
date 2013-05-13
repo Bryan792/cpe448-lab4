@@ -1,6 +1,9 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 public class NaiveSuffixTree
 {
@@ -69,8 +72,8 @@ public class NaiveSuffixTree
     for (int i = 0; i < this.input.length(); i++)
     {
       process(i, this.input.length(), root);
-      //System.out.println("TREE-----------------" + i);
-      //printTree(root);
+      // System.out.println("TREE-----------------" + i);
+      // printTree(root);
     }
     return root;
   }
@@ -170,16 +173,22 @@ public class NaiveSuffixTree
     return false;
   }
 
-  public ArrayList<Node> findMaxRepeats(Node node, int length, int repeats)
+  public HashMap<String, Integer> findMaxRepeats(Node node, int length,
+      int repeats, String acc)
   {
-    ArrayList<Node> returnArr = new ArrayList<Node>();
-    if (node.length() >= length && node.count >= repeats && isLeftDiverse(node) == true)
+    HashMap<String, Integer> returnArr = new HashMap<String, Integer>();
+    acc += input.substring(node.stringStart, node.stringEnd);
+    if (node.length() >= length && node.count >= repeats
+        && isLeftDiverse(node) == true)
     {
-      returnArr.add(node);
+      System.out.println(node);
+      System.out.println(node.stringStart + " " + node.stringEnd);
+      System.out.println(acc);
+      returnArr.put(acc, node.count);
     }
     for (Node child : node.children)
     {
-      returnArr.addAll(findMaxRepeats(child, length, repeats));
+      returnArr.putAll(findMaxRepeats(child, length, repeats, acc));
     }
     return returnArr;
   }
@@ -228,8 +237,13 @@ public class NaiveSuffixTree
   public static void main(String[] args)
   {
     NaiveSuffixTree myTree = new NaiveSuffixTree();
-    //String input = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCG$";
-    String input = "ATCGG$";
+    // String input =
+    // "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCG$";
+    String input = "AAAGAAGTGGGAAAG";
+    //              012345678901234
+    input += "$";
+    BaseCalculator myBaseCalculator = new BaseCalculator(input);
+    // String input = "ATCGG$";
     Node root = myTree.createTree(input);
     // System.out.println(myTree.nodes);
     /*
@@ -240,16 +254,28 @@ public class NaiveSuffixTree
      * return arg1.count - arg0.count; else return arg0.stringEnd -
      * arg1.stringEnd; } });
      */
-   /* for (Node node : myTree.nodes)
-    {
-      System.out.println(node.stringEnd + " " + node.count);
-    }*/
-    //System.out.println(myTree.nodes);
+    /*
+     * for (Node node : myTree.nodes) { System.out.println(node.stringEnd + " "
+     * + node.count); }
+     */
+    // System.out.println(myTree.nodes);
     // System.out.println(myTree.findMaxRepeats(root, 3));
     myTree.printTree(root);
-    for (Node node : myTree.findMaxRepeats(root, 1, 2))
+    System.out.println();
+    for (Entry<String, Integer> entry : myTree.findMaxRepeats(root, 1, 2,
+        new String()).entrySet())
     {
-      System.out.println(input.substring(0, node.stringEnd));
+      System.out.println(myBaseCalculator.expectedOccurences(entry.getKey()));
+      System.out.println(entry.getValue());
+      System.out.println(entry.getKey());
+      System.out.println(entry.getValue()
+          / myBaseCalculator.expectedOccurences(entry.getKey()));
+
+      if (entry.getValue()
+          / myBaseCalculator.expectedOccurences(entry.getKey()) >= 5)
+      {
+        System.out.println("Filtered");
+      }
       System.out.println();
     }
     // myTree.printTree(root);
