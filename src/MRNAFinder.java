@@ -1,3 +1,12 @@
+/*
+ * Team 6
+ * Andrew Nguyen
+ * Bryan Ching
+ * Matt Crussell
+ * CPE 448 Bioinformatics
+ * NaiveSuffixTree
+ */
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

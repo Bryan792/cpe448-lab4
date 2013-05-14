@@ -1,9 +1,19 @@
+/*
+ * Team 6
+ * Andrew Nguyen
+ * Bryan Ching
+ * Matt Crussell
+ * CPE 448 Bioinformatics
+ * NaiveSuffixTree
+ */
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class NaiveSuffixTree
 {
@@ -181,9 +191,9 @@ public class NaiveSuffixTree
     if (node.length() >= length && node.count >= repeats
         && isLeftDiverse(node) == true)
     {
-      System.out.println(node);
-      System.out.println(node.stringStart + " " + node.stringEnd);
-      System.out.println(acc);
+      // System.out.println(node);
+      // System.out.println(node.stringStart + " " + node.stringEnd);
+      // System.out.println(acc);
       returnArr.put(acc, node.count);
     }
     for (Node child : node.children)
@@ -226,59 +236,85 @@ public class NaiveSuffixTree
       else if (input.substring(node.children.get(i).stringStart,
           node.children.get(i).stringEnd).startsWith(sequence))
       {
-        System.out.println(input.substring(node.children.get(i).stringStart,
-            node.children.get(i).stringEnd));
+        // System.out.println(input.substring(node.children.get(i).stringStart,
+        // node.children.get(i).stringEnd));
         return findPosition(node.children.get(i));
       }
     }
     return null;
   }
 
-  public static void main(String[] args)
+  public static String run(String input, int length, int filter)
   {
+    StringBuilder sb = new StringBuilder();
     NaiveSuffixTree myTree = new NaiveSuffixTree();
-    // String input =
-    // "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATCGATCGTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTATCGATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCATCGATCGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGATCGATCG$";
-    String input = "AAAGAAGTGGGAAAG";
-    //              012345678901234
     input += "$";
-    BaseCalculator myBaseCalculator = new BaseCalculator(input);
-    // String input = "ATCGG$";
+    final BaseCalculator myBaseCalculator = new BaseCalculator(input);
     Node root = myTree.createTree(input);
-    // System.out.println(myTree.nodes);
-    /*
-     * Collections.sort(myTree.nodes, new Comparator<Node>() {
-     * 
-     * @Override public int compare(Node arg0, Node arg1) { // TODO
-     * Auto-generated method stub if(arg0.stringEnd - arg1.stringEnd == 0)
-     * return arg1.count - arg0.count; else return arg0.stringEnd -
-     * arg1.stringEnd; } });
-     */
-    /*
-     * for (Node node : myTree.nodes) { System.out.println(node.stringEnd + " "
-     * + node.count); }
-     */
-    // System.out.println(myTree.nodes);
-    // System.out.println(myTree.findMaxRepeats(root, 3));
-    myTree.printTree(root);
-    System.out.println();
-    for (Entry<String, Integer> entry : myTree.findMaxRepeats(root, 1, 2,
-        new String()).entrySet())
-    {
-      System.out.println(myBaseCalculator.expectedOccurences(entry.getKey()));
-      System.out.println(entry.getValue());
-      System.out.println(entry.getKey());
-      System.out.println(entry.getValue()
-          / myBaseCalculator.expectedOccurences(entry.getKey()));
 
-      if (entry.getValue()
-          / myBaseCalculator.expectedOccurences(entry.getKey()) >= 5)
+    ArrayList<Entry<String, Integer>> list = new ArrayList<Entry<String, Integer>>(
+        myTree.findMaxRepeats(root, length, 2, new String()).entrySet());
+
+    Collections.sort(list, new Comparator<Entry<String, Integer>>()
+    {
+
+      @Override
+      public int compare(Entry<String, Integer> arg1,
+          Entry<String, Integer> arg0)
       {
-        System.out.println("Filtered");
+        return (int) (arg0.getValue()
+            / myBaseCalculator.expectedOccurences(arg0.getKey()) - arg1
+            .getValue() / myBaseCalculator.expectedOccurences(arg1.getKey()));
       }
-      System.out.println();
+    });
+
+    for (Entry<String, Integer> entry : list)
+    {
+      // System.out.println(myBaseCalculator.expectedOccurences(entry.getKey()));
+      // System.out.println(entry.getValue());
+      // System.out.println(entry.getKey());
+      // System.out.println(entry.getValue()
+      // / myBaseCalculator.expectedOccurences(entry.getKey()));
+      //
+      if (entry.getValue()
+          / myBaseCalculator.expectedOccurences(entry.getKey()) >= filter)
+      {
+        sb.append(entry.getKey()
+            + "\n"
+            + entry.getValue()
+            + "\n"
+            + round(myBaseCalculator.expectedOccurences(entry.getKey()), 2)
+            + "\n"
+            + round(
+                entry.getValue()
+                    / myBaseCalculator.expectedOccurences(entry.getKey()), 2)
+            + "\n@\n");
+        sb.append(myTree.findSequence(entry.getKey(), root) + "\n\n");
+      }
+
     }
-    // myTree.printTree(root);
-    // Maximal Repeated sequences
+
+    return sb.toString();
   }
+
+  public static double round(double number, int places)
+  {
+    return ((int) (number * Math.pow(10, places))) / Math.pow(10, places);
+  }
+
+  public static String find(String input, String findMe)
+  {
+    StringBuilder sb = new StringBuilder();
+    NaiveSuffixTree myTree = new NaiveSuffixTree();
+    input += "$";
+    Node root = myTree.createTree(input);
+
+    for (int i : myTree.findSequence(findMe, root))
+    {
+      sb.append(i + "\n");
+    }
+
+    return sb.toString();
+  }
+
 }

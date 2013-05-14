@@ -1,69 +1,96 @@
-public class BaseCalculator {
-   private String sequence;
-   private double[] props;
-   private int nucleoCount;
+/*
+ * Team 6
+ * Andrew Nguyen
+ * Bryan Ching
+ * Matt Crussell
+ * CPE 448 Bioinformatics
+ * NaiveSuffixTree
+ */
 
-   public BaseCalculator(String s) {
-      this.sequence = s;
-      this.props = baseProportions(s);
-      this.nucleoCount = s.length();
-      if(s.charAt(s.length()-1) == '$')
-         this.nucleoCount--;
-   }
+public class BaseCalculator
+{
+  private String sequence;
+  private double[] props;
+  private int nucleoCount;
 
-   public double expectedOccurences(String s) {
-      double prob = 1.0;
+  public BaseCalculator(String s)
+  {
+    this.sequence = s;
+    this.props = baseProportions(s);
+    this.nucleoCount = s.length();
+    if (s.charAt(s.length() - 1) == '$')
+      this.nucleoCount--;
+  }
 
-      for(int i = 0; i < s.length(); i++) {
-         switch(s.charAt(i)) {
-            case 'A': prob *= props[0];
-                      break;
-            case 'T': prob *= props[1];
-                      break;
-            case 'G': prob *= props[2]; 
-                      break;
-            case 'C': prob *= props[3];
-                      break;
-            default:  break;
-         }
+  public double expectedOccurences(String s)
+  {
+    double prob = 1.0;
+
+    for (int i = 0; i < s.length(); i++)
+    {
+      switch (s.charAt(i))
+      {
+      case 'A':
+        prob *= props[0];
+        break;
+      case 'T':
+        prob *= props[1];
+        break;
+      case 'G':
+        prob *= props[2];
+        break;
+      case 'C':
+        prob *= props[3];
+        break;
+      default:
+        break;
       }
+    }
 
-      return prob * (double)nucleoCount;
-   }
+    return prob * (double) nucleoCount;
+  }
 
-   public static double[] baseProportions(String s) {
-      int aCount = 0;
-      int tCount = 0;
-      int gCount = 0;
-      int cCount = 0;
-      int count = 0;
+  public static double[] baseProportions(String s)
+  {
+    int aCount = 0;
+    int tCount = 0;
+    int gCount = 0;
+    int cCount = 0;
+    int count = 0;
 
-      for(int i = 0; i < s.length(); i++) {
-         switch(s.charAt(i)) {
-            case 'A': aCount++;
-                      count++;
-                      break;
-            case 'T': tCount++;
-                      count++;
-                      break;
-            case 'G': gCount++; 
-                      count++;
-                      break;
-            case 'C': cCount++;
-                      count++;
-                      break;
-            default:  break;
-         }
+    for (int i = 0; i < s.length(); i++)
+    {
+      switch (s.charAt(i))
+      {
+      case 'A':
+        aCount++;
+        count++;
+        break;
+      case 'T':
+        tCount++;
+        count++;
+        break;
+      case 'G':
+        gCount++;
+        count++;
+        break;
+      case 'C':
+        cCount++;
+        count++;
+        break;
+      default:
+        break;
       }
-      
-      double[] vals = new double[4];
+    }
 
-      vals[0] = (double)aCount / (double)count;
-      vals[1] = (double)tCount / (double)count;
-      vals[2] = (double)gCount / (double)count;
-      vals[3] = (double)cCount / (double)count;
+    double[] vals = new double[4];
 
-      return vals;
-   }
+    vals[0] = (double) aCount / (double) count;
+    vals[1] = (double) tCount / (double) count;
+    vals[2] = (double) gCount / (double) count;
+    vals[3] = (double) cCount / (double) count;
+
+    return vals;
+  }
 
 }
