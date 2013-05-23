@@ -36,13 +36,15 @@ import javax.swing.BoxLayout;
 import java.io.File;
 import java.io.FileWriter;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 @SuppressWarnings("serial")
 public class InputDialog extends JDialog
 {
   /*
    * CONSTANTS
    */
-  private final int DIALOG_HEIGHT = 800, DIALOG_WIDTH = 500;
+  private final int DIALOG_HEIGHT = 600, DIALOG_WIDTH = 500;
 
   /*
    * GUI Components
@@ -87,8 +89,8 @@ public class InputDialog extends JDialog
     mWinSize = new JTextField(20);
     mShiftIncr = new JTextField(20);
 
-    JPanel fastaFileField = prepareFileField(mFile);
-    JPanel gffFileField = prepareFileField(mFile2);
+    JPanel fastaFileField = prepareFileField(mFile, "Select Fasta: ");
+    JPanel gffFileField = prepareFileField(mFile2,  "Select GFF:    ");
 
     JPanel posField = prepareParamControls(mStartPos, mEndPos, mWinSize,
         mShiftIncr, mUseSlidingWindow);
@@ -147,13 +149,13 @@ public class InputDialog extends JDialog
    * Creates and returns a JPanel containing sub components that make up the
    * input file selection section
    */
-  private JPanel prepareFileField(JTextField fileField)
+  private JPanel prepareFileField(JTextField fileField, String text)
   {
     JPanel fastaFileField = new JPanel();
 
     fastaFileField.setLayout(new FlowLayout(FlowLayout.LEADING));
-
-    fastaFileField.add(new JLabel("Select Input File:"));
+    
+    fastaFileField.add(new JLabel(text));
     fastaFileField.add(fileField);
     fastaFileField.add(prepareBrowseButton(fileField));
 
@@ -176,6 +178,7 @@ public class InputDialog extends JDialog
       public void actionPerformed(ActionEvent e)
       {
         JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);  
         int returnVal = chooser.showOpenDialog(chooser);
 
         if (returnVal == JFileChooser.CANCEL_OPTION)
@@ -309,49 +312,102 @@ public class InputDialog extends JDialog
       {
         if (mFile.getText().equals(""))
         {
-          JOptionPane.showMessageDialog(null, "No FASTA file was selected",
+          JOptionPane.showMessageDialog(null, "No FASTA was selected",
               "Invalid File", JOptionPane.ERROR_MESSAGE);
         }
         else if (mFile2.getText().equals(""))
         {
-          JOptionPane.showMessageDialog(null, "No gff file was selected",
+          JOptionPane.showMessageDialog(null, "No gff was selected",
               "Invalid File", JOptionPane.ERROR_MESSAGE);
         }
         else
         {
-          String sequence = FileReader.readFastaFile(mFile.getText());
+          File fastaDir = new File(mFile.getText());
+          File gffDir = new File(mFile2.getText());
 
-          switch (mOptsBox.getSelectedIndex())
+          ArrayList<String> fastaList = new ArrayList<String>();
+          ArrayList<String> gffList = new ArrayList<String>();
+          
+
+          //Check if Both fasta and gff inputs are directories
+          if(fastaDir.isDirectory())
           {
-          case 2:
-            sequence = sequence.substring(
-                Integer.valueOf(mRangeStart.getText()) - 1,
-                Integer.valueOf(mRangeEnd.getText()));
-            break;
-          case 1:
-            int startHere = MRNAFinder.findSmallestMRNA(mFile2.getText());
-            //int startHere = 1;
-            sequence = sequence.substring(
-                Math.max(0,startHere - Integer.valueOf(mRangeStart.getText()) - 1),
-                startHere - 1);
-            break;
-          case 0:
-            break;
+            if(!gffDir.isDirectory())
+            {
+              JOptionPane.showMessageDialog(null, "Either Select Two Files or Two Folders",
+                "File/Folder Mismatch", JOptionPane.ERROR_MESSAGE);
+              return;
+            }
+            File[] fileList = fastaDir.listFiles();
+            for(int i = 0; i < fileList.length; i++)
+            {//Add only .fna file names to list
+              if(fileList[i].getName().endsWith(".fna"))
+                fastaList.add(fileList[i].getName());
+            }
           }
-
-          switch (mTypesBox.getSelectedIndex())
+          else if(gffDir.isDirectory())
           {
-          case 0:
-            mDisplayArea.setText(NaiveSuffixTree.find(sequence,
-                mType2.getText()));
-            break;
-          case 1:
-            mDisplayArea.setText(NaiveSuffixTree.run(sequence,
-                Integer.valueOf(mType2.getText()),
-                Integer.valueOf(mFilter.getText())));
-            break;
+            JOptionPane.showMessageDialog(null, "Either Select Two Files or Two Folders",
+              "File/Folder Mismatch", JOptionPane.ERROR_MESSAGE);
+            return;
           }
-
+          else
+          {
+            fastaList.add(mFile.getText());
+          }
+          Iterator<String> it = fastaList.iterator();
+          mDisplayArea.setText("");
+          while(it.hasNext())
+          {
+            String fastaPath, gffPath;
+            String fastaName = it.next();
+            if(fastaDir.isDirectory())
+            {
+              fastaPath = fastaDir + "/" + fastaName;
+              gffPath = gffDir + "/" + fastaName.substring(0,fastaName.length() - 4) + ".gff";
+            }
+            else
+            {
+              fastaPath = mFile.getText();
+              gffPath = mFile2.getText();
+            }
+            String sequence = FileReader.readFastaFile(fastaPath);
+            
+            switch (mOptsBox.getSelectedIndex())
+            {
+            case 2:
+              sequence = sequence.substring(
+                  Integer.valueOf(mRangeStart.getText()) - 1,
+                  Integer.valueOf(mRangeEnd.getText()));
+              break;
+            case 1:
+              int startHere = MRNAFinder.findSmallestMRNA(gffPath);
+              if(startHere < 0)
+                continue;
+             // int startHere = 1;
+              sequence = sequence.substring(
+                  Math.max(0,startHere - Integer.valueOf(mRangeStart.getText()) - 1),
+                  startHere - 1);
+              break;
+            case 0:
+              break;
+            }
+            mDisplayArea.append(fastaPath + "\n");
+            switch (mTypesBox.getSelectedIndex())
+            {
+            case 0:
+              mDisplayArea.append(NaiveSuffixTree.find(sequence,
+                  mType2.getText()));
+              break;
+            case 1:
+              mDisplayArea.append(NaiveSuffixTree.run(sequence,
+                  Integer.valueOf(mType2.getText()),
+                  Integer.valueOf(mFilter.getText())));
+              break;
+            }
+            mDisplayArea.append("\n\n");
+          }
+        
         }
       }
     });
