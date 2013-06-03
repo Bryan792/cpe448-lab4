@@ -172,11 +172,12 @@ public class NaiveSuffixTree
     {
       return true;
     }
-    char temp = input.charAt(node.leaves.get(0) - 1 - 1);
+    char temp = input.charAt(node.leaves.get(0) - 2);
     for (int i = 1; i < node.leaves.size(); i++)
     {
-      if (temp != input.charAt(node.leaves.get(0) - 1))
+      if (temp != input.charAt(node.leaves.get(i) - 2))
       {
+//        System.out.println(input.charAt(node.leaves.get(i) - 2));
         return true;
       }
     }
@@ -289,6 +290,8 @@ public class NaiveSuffixTree
                 entry.getValue()
                     / myBaseCalculator.expectedOccurences(entry.getKey()), 2)
             + "\n@\n");
+        //TODO
+        //Super repetitive work!!
         sb.append(myTree.findSequence(entry.getKey(), root) + "\n\n");
       }
 
@@ -316,5 +319,9 @@ public class NaiveSuffixTree
 
     return sb.toString();
   }
-
+//
+//  public static void main(String[] args)
+//  {
+//    System.out.println(run("aaabaa", 1, 0));
+//  }
 }
